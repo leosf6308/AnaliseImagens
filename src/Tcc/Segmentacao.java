@@ -5,8 +5,6 @@
  */
 package Tcc;
 
-
-
 import static Tcc.DrawingPanel.PADDING;
 import java.awt.GridLayout;
 import java.awt.Dimension;
@@ -39,14 +37,8 @@ import java.awt.Point;
  * @author Leonardo
  */
 
-
 public class Segmentacao extends JFrame{
-    private class SquareCorners{
-        Point NW; //Top left
-        Point NE; //Top right
-        Point SW; //Bottom left
-        Point SE; //Bottom right
-    }
+    public static final float ANGLE_THRESHOLD = 5.0f;
     private class VisuSegm extends JPanel{
         public static final float PADDING = 5.0f;
         public static final float EPISLON = 0.00000001f;
@@ -93,6 +85,8 @@ public class Segmentacao extends JFrame{
                 int i, j;
                 int w = this.getWidth();
                 int h = this.getHeight();
+                Cluster tClus;
+                String strStats;
                 if(w > segmDados.imgWidth-x)
                     w = segmDados.imgWidth-x;
                 if(h > segmDados.imgHeight-y)
@@ -106,19 +100,9 @@ public class Segmentacao extends JFrame{
                             canvas.setRGB(i, j, 0xFF000000);
                     }
                 }
-                SquareCorners box = segmDados.getCluster(segmDados.selectedClus).detectShape();
-                if(box != null){
-                    Graphics2D graph = canvas.createGraphics();
-                    graph.setColor(Color.WHITE);
-                    graph.fillOval(box.NW.x-4, box.NW.y-4, 8, 8);
-                    graph.fillOval(box.NE.x-4, box.NE.y-4, 8, 8);
-                    graph.fillOval(box.SW.x-4, box.SW.y-4, 8, 8);
-                    graph.fillOval(box.SE.x-4, box.SE.y-4, 8, 8);
-                    graph.drawLine(box.NW.x, box.NW.y, box.NE.x, box.NE.y);
-                    graph.drawLine(box.NE.x, box.NE.y, box.SE.x, box.SE.y);
-                    graph.drawLine(box.SW.x, box.SW.y, box.NW.x, box.NW.y);
-                    graph.drawLine(box.SE.x, box.SE.y, box.NW.x, box.NW.y);
-                }
+                tClus = segmDados.getCluster(segmDados.selectedClus);
+                strStats = segmDados.getCluster(segmDados.selectedClus).detectShape();
+                lblClusInf.setText("ID"+tClus.clusterID+"; x:"+tClus.left+"; y:"+tClus.top+"; w:"+(tClus.right-tClus.top)+"; h:"+(tClus.bottom-tClus.left)+" cnt:"+tClus.pixelCount+"; avg:"+tClus.tone+"; "+strStats);
                 g2.drawImage(canvas, null, null);
                 System.out.println(""+w+"x"+h);
             }
@@ -286,106 +270,189 @@ public class Segmentacao extends JFrame{
             }
             pixCnt.clear();
         }
-        public SquareCorners detectShape(){
-            SquareCorners box = new SquareCorners();
-            int i, thisPx, pos, cnt, max;
+        public String detectShape(){
+            String stats, sType;
+            Point center;
+            int i, j, S, width, height, thisPx, lnStep;
+            double ux, uy, u20, u02, u11, C, angleAbs, ratio;
             thisPx = top*imgW+left;
-            pos = 0;
-            max = (right-left)/10;
-            cnt = 0;
-            for(i = left; i < right; i++){
-                if(pixClus[thisPx] == clusterID){
-                    if(pos == 0)
-                        pos = i;
-                    else{
-                        cnt = i-pos;
-                        if(cnt > max){
-                            System.out.println("Edge is too big: s:"+pos+"x"+top+". l:"+cnt);
-                            return null;
-                        }
+            //Get region center
+            width = right-left;
+            height = bottom-top;
+            lnStep = imgW-width;
+            j = S = 0;
+            ux = uy = 0.0;
+            while(j < height){
+		i = 0;
+		while(i < width){
+                    if(pixClus[thisPx] == clusterID){
+                        ux += i;
+                        uy += j;
+                        S++;
                     }
-                }
-                thisPx++;
+                    thisPx++;
+                    i++;
+		}
+		thisPx += lnStep;
+		j++;
             }
-            if(pos != 0){
-                box.NW = new Point(pos+(cnt/2), top);
-                System.out.println("NW edge found at: s:"+pos+"x"+top+". l:"+cnt);
-            }else
-                return null;
+            ux /= S;
+            uy /= S;
+            center = new Point((int)ux,(int)uy);
             
             thisPx = top*imgW+left;
-            pos = 0;
-            max = (bottom-top)/10;
-            cnt = 0;
-            for(i = top; i < bottom; i++){
-                if(pixClus[thisPx] == clusterID){
-                    if(pos == 0)
-                        pos = i;
-                    else{
-                        cnt = i-pos;
-                        if(cnt > max){
-                            System.out.println("Edge is too big: s:"+left+"x"+pos+". l:"+cnt);
-                            return null;
-                        }
+            u20 = u02 = u11 = 0.0;
+            j = 0;
+            while(j < height){
+                i = 0;
+                while(i < width){
+                    if(pixClus[thisPx] == clusterID){
+                        int xvar, yvar;
+                        xvar = i - center.x;
+                        yvar = j - center.y;
+                        u20 += (xvar*xvar);
+                        u02 += (yvar*yvar);
+                        u11 += (xvar*yvar);
                     }
+                    thisPx++;
+                    i++;
                 }
-                thisPx += imgW;
+                thisPx += lnStep;
+                j++;
             }
-            if(pos != 0){
-                box.SW = new Point(left, pos+(cnt/2));
-                System.out.println("SW edge found at: s:"+left+"x"+pos+". l:"+cnt);
-            }else
-                return null;
+            u20 /= S;
+            u02 /= S;
+            u11 /= S;
+            C = 0.5*Math.atan2(2*u11,u20-u02);
             
-            thisPx = (bottom-1)*imgW+left;
-            pos = 0;
-            max = (right-left)/10;
-            cnt = 0;
-            for(i = left; i < right; i++){
-                if(pixClus[thisPx] == clusterID){
-                    if(pos == 0)
-                        pos = i;
-                    else{
-                        cnt = i-pos;
-                        if(cnt > max){
-                            System.out.println("Edge is too big: s:"+pos+"x"+bottom+". l:"+cnt);
-                            return null;
-                        }
+            angleAbs = Math.abs(C);
+            if(angleAbs < (ANGLE_THRESHOLD*Math.PI)/180.0 ||
+		(angleAbs-(Math.PI/4) < (ANGLE_THRESHOLD*Math.PI)/180.0 && angleAbs-(Math.PI/4) > -((ANGLE_THRESHOLD*Math.PI)/180.0)) ||
+		(angleAbs-(Math.PI/2) < (ANGLE_THRESHOLD*Math.PI)/180.0 && angleAbs-(Math.PI/2) > -((ANGLE_THRESHOLD*Math.PI)/180.0))){
+		//Nice, no rotation is required
+		ratio = ((double)S)/(width*height);
+                System.out.println("No rotation was required.");
+            }else{
+                int rWidth, rHeight, x, y, xMax, yMax;
+                Point[] corners = new Point[4];
+                Point rCenter;
+                double sine, cossine, newx, newy;
+                byte[][] pixels;
+		sine = Math.sin(-C);
+		cossine = Math.cos(-C);
+                corners[0] = new Point(-(width/2),-(height/2));
+		corners[1] = new Point(width/2,-(height/2));
+		corners[2] = new Point(-(width/2),height/2);
+		corners[3] = new Point(width/2,height/2);
+                xMax = -width;
+                yMax = -height; //It's the maximum point
+		x = width;
+		y = height;
+                for(i = 0; i < 4; i++){
+                    if(C > 0.0){ //Is angle clockwise?
+                        //Rotate Counterclockwise
+                        newx = corners[i].x*cossine+corners[i].y*sine;
+                        newy = -1*corners[i].x*sine+corners[i].y*cossine;
+                    }else{				
+                        //Rotate Clockwise
+                        newx = corners[i].x*cossine-corners[i].y*sine;
+                        newy = corners[i].x*sine+corners[i].y*cossine;
                     }
-                }
-                thisPx++;
-            }
-            if(pos != 0){
-                box.SE = new Point(pos+(cnt/2), bottom);
-                System.out.println("SE edge found at: s:"+pos+"x"+bottom+". l:"+cnt);
-            }else
-                return null;
-            
-            thisPx = top*imgW+(right-1);
-            pos = 0;
-            max = (bottom-top)/10;
-            cnt = 0;
-            for(i = top; i < bottom; i++){
-                if(pixClus[thisPx] == clusterID){
-                    if(pos == 0)
-                        pos = i;
-                    else{
-                        cnt = i-pos;
-                        if(cnt > max){
-                            System.out.println("Edge is too big: s:"+left+"x"+pos+". l:"+cnt);
-                            return null;
+                    corners[i].x = (int)Math.round(newx);
+                    corners[i].y = (int)Math.round(newy);
+                    if(corners[i].x < x)
+                        x = corners[i].x;
+                    if(corners[i].y < y)
+                        y = corners[i].y;
+                    if(corners[i].x > xMax)
+                        xMax = corners[i].x;
+                    if(corners[i].y > yMax)
+                        yMax = corners[i].y;
+		}
+                rWidth = (xMax-x)+1;
+                rHeight = (yMax-y)+1;
+                rCenter = new Point(rWidth/2, rHeight/2);
+                pixels = new byte[rHeight][rWidth];
+                thisPx = top*imgW+left;
+                j = 0;
+                while(j < height){
+                    i = 0;
+                    while(i < width){
+                        if(pixClus[thisPx] == clusterID){
+                            if(C > 0.0){ //Is angle clockwise?
+                                //Rotate Counterclockwise
+                                newx = (i-center.x)*cossine+(j-center.y)*sine;
+                                newy = -1*(i-center.x)*sine+(j-center.y)*cossine;
+                            }else{				
+                                //Rotate Clockwise
+                                newx = (i-center.x)*cossine-(j-center.y)*sine;
+                                newy = (i-center.x)*sine+(j-center.y)*cossine;
+                            }
+                            newx += rCenter.x;
+                            newy += rCenter.y;
+                            x = (int)Math.floor(newx);
+                            y = (int)Math.floor(newy);
+                            if(x < 0 || x+1 > rWidth || y < 0 || y+1 > rHeight)
+                                System.out.printf("Can't plot %d (pt%dx%d r%.2fx%.2f %.2f,%.2f)\n",y*rWidth+x,i,j,newx+rCenter.x,newy+rCenter.y,newx-x,newy-y);
+                            else{
+                                pixels[y][x] = 127;
+                                if(x+1 < rWidth && newx-x > 0.2){
+                                    pixels[y][x+1] = 127;
+                                    if(y+1 < rHeight && newy-y > 0.2)
+                                        pixels[y+1][x+1] = 127;
+                                }
+                                if(y+1 < rHeight && newy-y > 0.2)
+                                    pixels[y+1][x] = 127;
+                            }
                         }
+                        thisPx++;
+                        i++;
                     }
+                    thisPx += lnStep;
+                    j++;
                 }
-                thisPx += imgW;
+                x = rWidth;
+		y = rHeight;
+		xMax = 0;
+		yMax = 0;
+		thisPx = 0;
+		j = 0;
+		S = 0;
+		while(j < rHeight){
+                    i = 0;
+                    while(i < rWidth){
+                        if(pixels[j][i] == 127){
+                            if(i < x)
+                                x = i;
+                            if(j < y)
+                                y = j;
+                            if(i > xMax)
+                                xMax = i;
+                            if(j > yMax)
+                                yMax = j;
+                            S++;
+                        }
+                        thisPx++;
+                        i++;
+                    }
+                    j++;
+		}
+                rWidth = (xMax-x);
+		rHeight = (yMax-y);
+		ratio = ((double)S)/(rWidth*rHeight);
             }
-            if(pos != 0){
-                box.NE = new Point(right, pos+(cnt/2));
-                System.out.println("NE edge found at: s:"+left+"x"+pos+". l:"+cnt);
-            }else
-                return null;
-            
-            return box;
+            if(Math.abs(ratio-1) < 0.05)
+		sType = "SQUARE";
+            else if(Math.abs(ratio-0.78) < 0.02)
+                sType = "CIRCLE";
+            else if(ratio < 0.5 && ratio > 0.25 )
+                sType = "TRIANGLE";
+            else
+                sType = "UNKNOWN";
+            stats = String.format("(%03d|%03d|%03d)\t%d\t%d\t%d\t%d\t%d\t%d\t%d\t%.4e\t%.4e\t%.4e\t%.3f\t%.3f\t%s\n",
+            tone.getRed(),tone.getGreen(),tone.getBlue(),pixelCount,left,top,right-left,bottom-top,center.x,center.y,
+            u20,u02,u11,(C*180.0)/Math.PI,ratio,sType);
+            return stats;
         }
     }
     private int state;
@@ -407,7 +474,7 @@ public class Segmentacao extends JFrame{
     private VisuSegm drawPane;
     private JLabel lblCntClusters;
     private JComboBox cblClustList;
-    private JLabel lblClusInf;
+    private JTextField lblClusInf;
     public Segmentacao(int tipo, int imgW, int imgH, PixelReader pr){
         super();
         state = STATE_INITIALIZING;
@@ -418,12 +485,12 @@ public class Segmentacao extends JFrame{
         String[] strClusNames = {"Cluster 1", "Cluster 2", "Cluswter 3"};
         Dimension size;
         lblCntClusters = new JLabel("Counting clusters...");
-        lblClusInf = new JLabel("Select a cluster");
+        lblClusInf = new JTextField("Select a cluster");
         cblClustList = new JComboBox(strClusNames);
         janela.setLayout(null);
         janela.add(lblCntClusters);
-        janela.add(lblClusInf);
         janela.add(cblClustList);
+        janela.add(lblClusInf);
         janela.add(drawPane);
         
         lblCntClusters.setFont(this.getFont());
@@ -431,16 +498,15 @@ public class Segmentacao extends JFrame{
         size = lblCntClusters.getPreferredSize();
         lblCntClusters.setBounds(insets.left,insets.top+3, size.width, size.height);
         
+        size = cblClustList.getPreferredSize();
+        cblClustList.setBounds(lblCntClusters.getWidth()+insets.left,insets.top, size.width, size.height);
+        
         lblClusInf.setFont(this.getFont());
         lblClusInf.setForeground(this.getForeground());
         size = lblClusInf.getPreferredSize();
-        lblClusInf.setBounds(lblCntClusters.getWidth()+insets.left,insets.top+3, size.width+5, size.height);
+        lblClusInf.setBounds(lblCntClusters.getWidth()+cblClustList.getWidth()+insets.left,insets.top+3, 200, size.height);
         
-        size = cblClustList.getPreferredSize();
-        cblClustList.setBounds(lblCntClusters.getWidth()+lblClusInf.getWidth()+insets.left,
-                insets.top, size.width, size.height);
-        
-        drawPane.setBounds(insets.left,insets.top+size.height, drawPane.getWidth(), drawPane.getHeight());
+        drawPane.setBounds(insets.left,insets.top+cblClustList.getHeight(), drawPane.getWidth(), drawPane.getHeight());
         
         setSize(drawPane.getWidth() + insets.left + insets.right, drawPane.getHeight() + size.height + insets.top + insets.bottom);
         this.setVisible(true);
@@ -657,13 +723,6 @@ public class Segmentacao extends JFrame{
                     strObjName = strObjName.substring(2, strObjName.indexOf(';'));
                     selectedClus = Integer.parseInt(strObjName);
                     //JOptionPane.showMessageDialog(null,"Changed to "+selectedClus,"Selected cluster!",JOptionPane.INFORMATION_MESSAGE);
-                    Cluster tClus = clusterList;
-                    while(tClus != null){
-                        if(tClus.clusterID == selectedClus)
-                            break;
-                        tClus = tClus.next;
-                    }
-                    lblClusInf.setText("ID"+tClus.clusterID+"; x:"+tClus.left+"; y:"+tClus.top+"; w:"+(tClus.right-tClus.top)+"; h:"+(tClus.bottom-tClus.left)+" cnt:"+tClus.pixelCount+"; avg:"+tClus.tone);
                     updateUI();
                 }
             }
