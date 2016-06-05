@@ -30,8 +30,12 @@ import javafx.scene.image.WritableImage;
 import javax.imageio.ImageIO;
 import java.awt.event.ItemListener;
 import java.awt.event.ItemEvent;
+import java.awt.event.MouseMotionListener;
+import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.awt.Point;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
 /**
  *
  * @author Leonardo
@@ -39,18 +43,19 @@ import java.awt.Point;
 
 public class Segmentacao extends JFrame{
     public static final float ANGLE_THRESHOLD = 5.0f;
-    private class VisuSegm extends JPanel{
+    private class VisuSegm extends JPanel implements MouseMotionListener{
         public static final float PADDING = 5.0f;
         public static final float EPISLON = 0.00000001f;
         private Segmentacao segmDados;
         private BufferedImage canvas;
-        private int x, y;
+        private int x, y, xLast, yLast;
         public VisuSegm(Segmentacao dados){
             super();
             this.setSize(800,600);
             segmDados = dados;
             x = y = 0;
             canvas = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+            addMouseMotionListener(this);
         }
         @Override
         public Dimension getPreferredSize() {
@@ -107,28 +112,58 @@ public class Segmentacao extends JFrame{
                 System.out.println(""+w+"x"+h);
             }
         }
+        public void mouseMoved(MouseEvent e) {
+            xLast = e.getX();
+            yLast = e.getY();
+            return;
+        }
+
+        public void mouseDragged(MouseEvent e) {
+            int diffX, diffY;
+            diffX = e.getX()-xLast;
+            diffY = e.getY()-yLast;
+            x -= diffX;
+            y -= diffY;
+            if(x > segmDados.imgWidth-this.getWidth())
+                x = segmDados.imgWidth-this.getWidth();
+            if(y > segmDados.imgHeight-this.getHeight())
+                y = segmDados.imgHeight-this.getHeight();
+            if(x < 0)
+                x = 0;
+            if(y < 0)
+                y = 0;
+            System.out.println("Mouse moved by "+e.getX()+"x"+e.getY()+". New position: "+x+"x"+y+".");
+            xLast = e.getX();
+            yLast = e.getY();
+            this.repaint();
+        }
+        public void RedimVisu(int width, int height){
+            setSize(width,height);
+            canvas = new BufferedImage(getWidth(), getHeight(), BufferedImage.TYPE_INT_ARGB);
+        }
     }
     public static double colorDistance(Color c1, Color c2){
-         int dr = c1.getRed()-c2.getRed();
-         int dg = c1.getGreen()-c2.getGreen();
-         int db = c1.getBlue()-c2.getBlue();
-         double dist = dr*dr + dg*dg + db*db;
-         return Math.sqrt(dist);
+        int dr = c1.getRed()-c2.getRed();
+        int dg = c1.getGreen()-c2.getGreen();
+        int db = c1.getBlue()-c2.getBlue();
+        double dist = dr*dr + dg*dg + db*db;
+        return Math.sqrt(dist);
     }
     
     private class PixelCount{
-         public int clusterID;
-         public int count;
-         public double distance;
-         public PixelCount(int id, double dist){
-              clusterID = id;
-              count = 1;
-              distance = dist;
-         }
+        public int clusterID;
+        public int count;
+        public double distance;
+        public PixelCount(int id, double dist){
+             clusterID = id;
+             count = 1;
+             distance = dist;
+        }
     }
     private class Cluster{
         public int clusterID;
         public Cluster next;
+        public Cluster before;
         public int pixelCount;
         public int left;
         public int top;
@@ -151,6 +186,7 @@ public class Segmentacao extends JFrame{
             pixClus = pixelCluster;
             pixClus[top*imgW+left] = clusterID;
             next = null;
+            before = null;
         }
         public void mergePoint(int x, int y, Color color){
             float newR = (tone.getRed()*pixelCount+color.getRed());
@@ -174,6 +210,7 @@ public class Segmentacao extends JFrame{
         }
         void mergeCluster(Cluster c2, Cluster head){
             int i;
+            Cluster clusBefore;
             if(c2.clusterID == clusterID)
                 throw new RuntimeException("A self merge was detected.");
             
@@ -199,9 +236,11 @@ public class Segmentacao extends JFrame{
             for(i = 0; i < imgW*imgH; i++)
                 if(pixClus[i] == c2.clusterID)
                     pixClus[i] = clusterID;
-            while(head != null && head.next != c2)
-                head = head.next;
-            head.next = c2.next;
+            
+            clusBefore = c2.before;
+            clusBefore.next = c2.next;
+            if(clusBefore.next != null)
+                clusBefore.next.before = clusBefore;
             //GC will delete c2.
         }
         void mergeClosest(Cluster head){
@@ -523,7 +562,21 @@ public class Segmentacao extends JFrame{
                 break;
         }
         selectedClus = 0;
+        Segmentacao jPane = this;
+        this.addComponentListener(new ComponentAdapter() {
+            public void componentResized(ComponentEvent e) {
+                // This is only called when the user releases the mouse button.
+                jPane.resize();
+            }
+        });
         //https://docs.oracle.com/javase/tutorial/uiswing/examples/components/index.html#LabelDemo
+    }
+    public void resize(){
+        Container janela = getContentPane();
+        Insets insets = getInsets();
+        drawPane.RedimVisu(this.getWidth()-(insets.right+insets.left), this.getHeight()-(drawPane.getX()+insets.top));
+        
+        System.out.println("New size: "+(this.getWidth()-(insets.right+insets.left))+"x"+(this.getHeight()-(drawPane.getX()+insets.top))+". ");
     }
     public void updateUI(){
         //drawPane.invalidate();
@@ -611,6 +664,7 @@ public class Segmentacao extends JFrame{
                 Ci.mergePoint(j, 0, thisPx);
             else{
                 Ci = new Cluster(j,0,++lastID,thisPx,imgWidth,imgHeight,pixelCluster);
+                Ci.before = lastClus;
                 lastClus.next = Ci;
                 lastClus = Ci;
                 clusterCount++;
@@ -619,13 +673,14 @@ public class Segmentacao extends JFrame{
         
         for(i = 1; i < imgHeight; i++){
             Ci = getPixelCluster(0,i-1);
-            color = pixReader.getColor(i, 0);
+            color = pixReader.getColor(0, i);
             thisPx = new Color((int)(color.getRed()*255),(int)(color.getGreen()*255),(int)(color.getBlue()*255));
             dist = colorDistance(Ci.tone,thisPx);
             if(dist < threshold)
                 Ci.mergePoint(0, i, thisPx);
             else{
                 Ci = new Cluster(0,i,++lastID,thisPx,imgWidth,imgHeight,pixelCluster);
+                Ci.before = lastClus;
                 lastClus.next = Ci;
                 lastClus = Ci;
                 clusterCount++;
@@ -651,18 +706,11 @@ public class Segmentacao extends JFrame{
                             if(Cl != clusterList){
                                 Cu.mergeCluster(Cl, clusterList);
                                 if(Cl == lastClus)
-                                    findLast = true;
+                                    lastClus = lastClus.before;
                             }else{
                                 Cl.mergeCluster(Cu, clusterList);
                                 if(Cu == lastClus)
-                                    findLast = true;
-                            }
-                            
-                            if(findLast){
-                                System.out.println("Recomputing cluster list last item...");
-                                lastClus = clusterList;
-                                while(lastClus != null && lastClus.next != null)
-                                    lastClus = lastClus.next;
+                                    lastClus = lastClus.before;
                             }
                         }
                     }
@@ -672,6 +720,7 @@ public class Segmentacao extends JFrame{
                         Cl.mergePoint(j, i, thisPx);
                     else{
                         Ci = new Cluster(j,i,++lastID,thisPx,imgWidth,imgHeight,pixelCluster);
+                        Ci.before = lastClus;
                         lastClus.next = Ci;
                         lastClus = Ci;
                         clusterCount++;
