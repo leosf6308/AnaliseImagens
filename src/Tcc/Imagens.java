@@ -20,7 +20,7 @@ import javafx.embed.swing.SwingFXUtils;
 /** @author Henrique,Leonardo and Joseph **/
 
 public class Imagens {
-    public Image imagem, sta;
+    /*public Image imagem, sta;
     public Button sair, st; 
     public StackPane stack;
     public HBox box;
@@ -124,7 +124,8 @@ public class Imagens {
         //Verificar se é vídeo ou imagem.
         if(extensao.equals(".FLV") || extensao.equals(".AVI") || extensao.equals(".MP4")){
             Player vidPlayer = TCC.vidPlayer;
-            imagem = vidPlayer.view.snapshot(new SnapshotParameters(), new WritableImage(vidPlayer.w,vidPlayer.h));
+            imagem = vidPlayer.view.snapshot(new SnapshotParameters(), new WritableImage(vidPlayer.media.getWidth(),vidPlayer.media.getHeight()));
+            //imagem = vidPlayer.player.
             criaVisuImg(imagem,true);
         }else{
             String exibe = "file:/"+caminho;
@@ -171,5 +172,5 @@ public class Imagens {
                     itemVisivel = false;
             }
         }
-    }
+    }*/
 }

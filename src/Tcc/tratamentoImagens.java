@@ -13,51 +13,37 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
 import javax.swing.JOptionPane;
+import javafx.scene.image.Image;
 
 /** @author Henrique, Joseph and Leonardo **/
 
 public class tratamentoImagens {
     public static int cont=1; 
     
-    public static void tonsdeCinza(){
-        Imagens imgAtual = TCC.obtemClassImagemAtual();
-        if(imgAtual == null)
-            return;
+    public static Image tonsdeCinza(Image imgAtual){
         //System.out.println("Aplicando cinza em "+imgAtual.toString()+"; "+imgAtual.box.toString());
-        PixelReader pr = imgAtual.imagem.getPixelReader();
-        WritableImage nova = new WritableImage((int)imgAtual.imagem.getWidth(),(int)imgAtual.imagem.getHeight());
+        PixelReader pr = imgAtual.getPixelReader();
+        WritableImage nova = new WritableImage((int)imgAtual.getWidth(),(int)imgAtual.getHeight());
         PixelWriter pw = nova.getPixelWriter();
         
-        for(int h=0;h<imgAtual.imagem.getHeight();h++){
-            for(int w=0;w<imgAtual.imagem.getWidth();w++){
+        for(int h=0;h<imgAtual.getHeight();h++){
+            for(int w=0;w<imgAtual.getWidth();w++){
                Color color = pr.getColor(w,h);
-
                color = color.grayscale();
                pw.setColor(w,h,color);
             }
         }
-        
-        ImageView img = new ImageView();
-        img.setImage(nova);
-        imgAtual.imagem = nova;
-        imgAtual.sp.setContent(img);
-        imgAtual.sp.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setHmax(800);
-        imgAtual.sp.setVmax(780);
-        
+        return (Image)nova;
     }
     
-    public static void brighter(){
-        Imagens imgAtual = TCC.obtemClassImagemAtual();
-        if(imgAtual == null)
-            return;
-        PixelReader pr = imgAtual.imagem.getPixelReader();
-        WritableImage imgNova = new WritableImage((int)imgAtual.imagem.getWidth(),(int)imgAtual.imagem.getHeight());
+    public static Image brighter(Image imgAtual){
+        
+        PixelReader pr = imgAtual.getPixelReader();
+        WritableImage imgNova = new WritableImage((int)imgAtual.getWidth(),(int)imgAtual.getHeight());
         PixelWriter pw = imgNova.getPixelWriter();
 
-        for(int h=0;h<imgAtual.imagem.getHeight();h++){
-            for(int w=0;w<imgAtual.imagem.getWidth();w++){
+        for(int h=0;h<imgAtual.getHeight();h++){
+            for(int w=0;w<imgAtual.getWidth();w++){
                Color color = pr.getColor(w,h);
 
                color = color.brighter();
@@ -65,57 +51,31 @@ public class tratamentoImagens {
 
             }
         }
-        
-        ImageView img = new ImageView();
-        img.setImage(imgNova);
-        imgAtual.imagem = imgNova;
-        imgAtual.sp.setContent(img);
-        imgAtual.sp.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setHmax(800);
-        imgAtual.sp.setVmax(780);
-        
+        return (Image)imgNova;
     }
     
-    public static void darker(){
-        Imagens imgAtual = TCC.obtemClassImagemAtual();
-        if(imgAtual == null)
-            return;
-        PixelReader pr = imgAtual.imagem.getPixelReader();
-        WritableImage imgNova = new WritableImage((int)imgAtual.imagem.getWidth(),(int)imgAtual.imagem.getHeight());
+    public static Image darker(Image imgAtual){
+        PixelReader pr = imgAtual.getPixelReader();
+        WritableImage imgNova = new WritableImage((int)imgAtual.getWidth(),(int)imgAtual.getHeight());
         PixelWriter pw = imgNova.getPixelWriter();
 
-        for(int h=0;h<imgAtual.imagem.getHeight();h++){
-            for(int w=0;w<imgAtual.imagem.getWidth();w++){
+        for(int h=0;h<imgAtual.getHeight();h++){
+            for(int w=0;w<imgAtual.getWidth();w++){
                Color color = pr.getColor(w,h);
-
                color = color.darker();
                pw.setColor(w,h,color);
-
             }
         }
-        
-        ImageView img = new ImageView();
-        img.setImage(imgNova);
-        imgAtual.imagem = imgNova;
-        imgAtual.sp.setContent(img);
-        imgAtual.sp.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setHmax(800);
-        imgAtual.sp.setVmax(780);
-        
+        return (Image)imgNova;
     }
     
-    public static void negativo(){
-        Imagens imgAtual = TCC.obtemClassImagemAtual();
-        if(imgAtual == null)
-            return;
-        PixelReader pr = imgAtual.imagem.getPixelReader();
-        WritableImage imgNova = new WritableImage((int)imgAtual.imagem.getWidth(),(int)imgAtual.imagem.getHeight());
+    public static Image negativo(Image imgAtual){
+        PixelReader pr = imgAtual.getPixelReader();
+        WritableImage imgNova = new WritableImage((int)imgAtual.getWidth(),(int)imgAtual.getHeight());
         PixelWriter pw = imgNova.getPixelWriter();
 
-        for(int h=0;h<imgAtual.imagem.getHeight();h++){
-            for(int w=0;w<imgAtual.imagem.getWidth();w++){
+        for(int h=0;h<imgAtual.getHeight();h++){
+            for(int w=0;w<imgAtual.getWidth();w++){
                Color color = pr.getColor(w,h);
 
                color = color.invert();
@@ -123,23 +83,12 @@ public class tratamentoImagens {
 
             }
         }
-        
-        ImageView img = new ImageView();
-        img.setImage(imgNova);
-        imgAtual.imagem = imgNova;
-        imgAtual.sp.setContent(img);
-        imgAtual.sp.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setHmax(800);
-        imgAtual.sp.setVmax(780);
+        return (Image)imgNova;
     }
     
-    public static void sobelOperator(Boolean isGradient){
-        Imagens imgAtual = TCC.obtemClassImagemAtual();
-        if(imgAtual == null)
-            return;
-        PixelReader pr = imgAtual.imagem.getPixelReader();
-        WritableImage imgNova = new WritableImage((int)imgAtual.imagem.getWidth(),(int)imgAtual.imagem.getHeight());
+    public static Image sobelOperator(Image imgAtual, Boolean isGradient){
+        PixelReader pr = imgAtual.getPixelReader();
+        WritableImage imgNova = new WritableImage((int)imgAtual.getWidth(),(int)imgAtual.getHeight());
         PixelWriter pw = imgNova.getPixelWriter();
         int[][] GX = new int[3][3];
         int[][] GY = new int[3][3];
@@ -154,8 +103,8 @@ public class tratamentoImagens {
         GY[1][0] =  0; GY[1][1] =  0; GY[1][2] =  0;
         GY[2][0] = -1; GY[2][1] = -2; GY[2][2] = -1;
         
-        width = (int)imgAtual.imagem.getWidth();
-        height = (int)imgAtual.imagem.getHeight();
+        width = (int)imgAtual.getWidth();
+        height = (int)imgAtual.getHeight();
         for(y = 0; y < height; y++){
             for(x = 0; x < width; x++){
                 if(x == 0 || y == 0 || x >= width-1 || y >= height-1 ){
@@ -198,22 +147,15 @@ public class tratamentoImagens {
                 pw.setColor(x,y,newColor);
             }
         }
-        ImageView img = new ImageView();
-        img.setImage(imgNova);
-        imgAtual.imagem = imgNova;
-        imgAtual.sp.setContent(img);
-        imgAtual.sp.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setHmax(800);
-        imgAtual.sp.setVmax(780);
+        return (Image)imgNova;
     }
     
-    public static void detecaoBorda(){
-        sobelOperator(false);
+    public static Image detecaoBorda(Image imgAtual){
+        return sobelOperator(imgAtual, false);
     }
     
-    public static void gradiente(){
-        sobelOperator(true);
+    public static Image gradiente(Image imgAtual){
+        return sobelOperator(imgAtual, true);
     }
     
     public static int[] geraHistograma(PixelReader pr, int width, int height){
@@ -235,21 +177,17 @@ public class tratamentoImagens {
         return histograma;
     }
     
-    public static void eqHistograma(){
-        Imagens imgAtual = TCC.obtemClassImagemAtual();
-        if(imgAtual == null)
-            return;
-        
-        PixelReader pr = imgAtual.imagem.getPixelReader();
-        WritableImage imgNova = new WritableImage((int)imgAtual.imagem.getWidth(),(int)imgAtual.imagem.getHeight());
+    public static Image eqHistograma(Image imgAtual){
+        PixelReader pr = imgAtual.getPixelReader();
+        WritableImage imgNova = new WritableImage((int)imgAtual.getWidth(),(int)imgAtual.getHeight());
         PixelWriter pw = imgNova.getPixelWriter();
         
         int i, j, x, y, width, height, r, g, b, m, size;
         double alpha;
-        int[] histograma = geraHistograma(pr,(int)imgAtual.imagem.getWidth(),(int)imgAtual.imagem.getHeight());
+        int[] histograma = geraHistograma(pr,(int)imgAtual.getWidth(),(int)imgAtual.getHeight());
         int[] lookup = new int[256];
-        width = (int)imgAtual.imagem.getWidth();
-        height = (int)imgAtual.imagem.getHeight();
+        width = (int)imgAtual.getWidth();
+        height = (int)imgAtual.getHeight();
         size = width*height;
         alpha = 255.0/size;
         
@@ -279,25 +217,17 @@ public class tratamentoImagens {
                 pw.setColor(x,y,newColor);
             }
         }
-        
-        ImageView img = new ImageView();
-        img.setImage(imgNova);
-        imgAtual.imagem = imgNova;
-        imgAtual.sp.setContent(img);
-        imgAtual.sp.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setHmax(800);
-        imgAtual.sp.setVmax(780);
+        return (Image)imgNova;
     }
         
     public static void exibeHistograma(){
-        Imagens imgAtual = TCC.obtemClassImagemAtual();
+        Visualizacao imgAtual = TCC.obtemClassImagemAtual();
         if(imgAtual == null)
             return;
         
-        PixelReader pr = imgAtual.imagem.getPixelReader();
+        PixelReader pr = imgAtual.getImagem().getPixelReader();
         int i;
-        int[] histograma = geraHistograma(pr,(int)imgAtual.imagem.getWidth(),(int)imgAtual.imagem.getHeight());
+        int[] histograma = geraHistograma(pr,(int)imgAtual.getImagem().getWidth(),(int)imgAtual.getImagem().getHeight());
         float[] xAxis = new float[256];
         float[] yAxis = new float[256];
         for(i = 0; i < 256; i++){
@@ -308,13 +238,13 @@ public class tratamentoImagens {
         new Graficos(xAxis,yAxis);
     }
     
-    public static void segmentacaoLimiar(Imagens imgAtual, PixelReader pr, int limiar){
-        WritableImage newImage = new WritableImage((int)imgAtual.imagem.getWidth(),(int)imgAtual.imagem.getHeight());
+    public static void segmentacaoLimiar(Visualizacao imgAtual, PixelReader pr, int limiar){
+        WritableImage newImage = new WritableImage((int)imgAtual.getImagem().getWidth(),(int)imgAtual.getImagem().getHeight());
         PixelWriter pw = newImage.getPixelWriter();
         
         int i, x, y, width, height, r, g, b, m;
-        width = (int)imgAtual.imagem.getWidth();
-        height = (int)imgAtual.imagem.getHeight();
+        width = (int)imgAtual.getImagem().getWidth();
+        height = (int)imgAtual.getImagem().getHeight();
         System.out.println("Segmenting current image by threshold "+limiar);
         for(y = 0; y < height; y++){
             for(x = 0; x < width; x++){
@@ -332,12 +262,7 @@ public class tratamentoImagens {
         
         ImageView img = new ImageView();
         img.setImage(newImage);
-        imgAtual.imagem = newImage;
-        imgAtual.sp.setContent(img);
-        imgAtual.sp.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setHmax(800);
-        imgAtual.sp.setVmax(780);
+        imgAtual.defineImagem(newImage);
         /*
         int[] peaks = new int[10];
         int[] peakValues = new int[10];
@@ -370,13 +295,13 @@ public class tratamentoImagens {
     }
     
     public static void segmentacao2(){
-        Imagens imgAtual = TCC.obtemClassImagemAtual();
+        Visualizacao imgAtual = TCC.obtemClassImagemAtual();
         if(imgAtual == null)
             return;
         
-        PixelReader pr = imgAtual.imagem.getPixelReader();
+        PixelReader pr = imgAtual.getImagem().getPixelReader();
         
-        int[] histograma = geraHistograma(pr,(int)imgAtual.imagem.getWidth(),(int)imgAtual.imagem.getHeight());
+        int[] histograma = geraHistograma(pr,(int)imgAtual.getImagem().getWidth(),(int)imgAtual.getImagem().getHeight());
         int i, k, threshold, width, height, size;
         
         float w = 0.0f;
@@ -388,8 +313,8 @@ public class tratamentoImagens {
         threshold = 0;
         float[] histNormalized = new float[256];
         
-        width = (int)imgAtual.imagem.getWidth();
-        height = (int)imgAtual.imagem.getHeight();
+        width = (int)imgAtual.getImagem().getWidth();
+        height = (int)imgAtual.getImagem().getHeight();
         size = width*height;
         
         for (i=1; i<=k; i++) 
@@ -410,14 +335,14 @@ public class tratamentoImagens {
     }
     
     public static void segmentacao3(){
-        Imagens imgAtual = TCC.obtemClassImagemAtual();
+        Visualizacao imgAtual = TCC.obtemClassImagemAtual();
         if(imgAtual == null)
             return;
         
-        PixelReader pr = imgAtual.imagem.getPixelReader();
+        PixelReader pr = imgAtual.getImagem().getPixelReader();
         int i, x, y, width, height, size;
-        width = (int)imgAtual.imagem.getWidth();
-        height = (int)imgAtual.imagem.getHeight();
+        width = (int)imgAtual.getImagem().getWidth();
+        height = (int)imgAtual.getImagem().getHeight();
         int[] histograma = geraHistograma(pr,width,height);
         int maxFnd = 0, maxFnt = 0;
         for(i = 0; i < histograma.length; i++){
@@ -431,17 +356,17 @@ public class tratamentoImagens {
     
     public static void segmentacaoOtsu(){
         //http://www.labbookpages.co.uk/software/imgProc/otsuThreshold.html
-        Imagens imgAtual = TCC.obtemClassImagemAtual();
+        Visualizacao imgAtual = TCC.obtemClassImagemAtual();
         if(imgAtual == null)
             return;
         
-        PixelReader pr = imgAtual.imagem.getPixelReader();
+        PixelReader pr = imgAtual.getImagem().getPixelReader();
         
-        int[] histograma = geraHistograma(pr,(int)imgAtual.imagem.getWidth(),(int)imgAtual.imagem.getHeight());
+        int[] histograma = geraHistograma(pr,(int)imgAtual.getImagem().getWidth(),(int)imgAtual.getImagem().getHeight());
         int i, x, y, width, height, size;
         
-        width = (int)imgAtual.imagem.getWidth();
-        height = (int)imgAtual.imagem.getHeight();
+        width = (int)imgAtual.getImagem().getWidth();
+        height = (int)imgAtual.getImagem().getHeight();
         size = width*height;
         
         //Utilizando o método de Otsu.
@@ -484,17 +409,17 @@ public class tratamentoImagens {
         else if(s.equals("Segmentação (2)"))
             segmentacao2();
         else{
-            Imagens imgAtual = TCC.obtemClassImagemAtual();
+            Visualizacao imgAtual = TCC.obtemClassImagemAtual();
             if(imgAtual == null)
                 return;
             if(s.equals("Fast Scanning"))
-                Segmentacao.iniciaSegmentacao(Segmentacao.SEGM_DKH_FAST_SCANNING,imgAtual.imagem);
+                Segmentacao.iniciaSegmentacao(Segmentacao.SEGM_DKH_FAST_SCANNING,imgAtual.getImagem());
             else if(s.equals("Watershed"))
-                Segmentacao.iniciaSegmentacao(Segmentacao.SEGM_WATERSHED,imgAtual.imagem);
+                Segmentacao.iniciaSegmentacao(Segmentacao.SEGM_WATERSHED,imgAtual.getImagem());
             else if(s.equals("K Means Clustering"))
-                Segmentacao.iniciaSegmentacao(Segmentacao.SEGM_KMEANS,imgAtual.imagem);
+                Segmentacao.iniciaSegmentacao(Segmentacao.SEGM_KMEANS,imgAtual.getImagem());
             /*
-            Imagens imgAtual = TCC.obtemClassImagemAtual();
+            Visualizacao imgAtual = TCC.obtemClassImagemAtual();
             if(imgAtual == null)
                 return;
             SegmentacaoBak segmDados = new SegmentacaoBak(imgAtual.imagem);   
@@ -522,17 +447,17 @@ public class tratamentoImagens {
 	if less than 2 zeros, inside point (no connection)
         else able to connect
         */
-        Imagens imgAtual = TCC.obtemClassImagemAtual();
+        Visualizacao imgAtual = TCC.obtemClassImagemAtual();
         if(imgAtual == null)
             return;
         
-        PixelReader pr = imgAtual.imagem.getPixelReader();
-        WritableImage imgNova = new WritableImage((int)imgAtual.imagem.getWidth(),(int)imgAtual.imagem.getHeight());
+        PixelReader pr = imgAtual.getImagem().getPixelReader();
+        WritableImage imgNova = new WritableImage((int)imgAtual.getImagem().getWidth(),(int)imgAtual.getImagem().getHeight());
         PixelWriter pw = imgNova.getPixelWriter();
         
         int i, j, x, y, width, height, r, g, b, m, size;
-        width = (int)imgAtual.imagem.getWidth();
-        height = (int)imgAtual.imagem.getHeight();
+        width = (int)imgAtual.getImagem().getWidth();
+        height = (int)imgAtual.getImagem().getHeight();
         size = width*height;
      
         for(y = 0; y < height; y++){
@@ -565,11 +490,6 @@ public class tratamentoImagens {
         
         ImageView img = new ImageView();
         img.setImage(imgNova);
-        imgAtual.imagem = imgNova;
-        imgAtual.sp.setContent(img);
-        imgAtual.sp.setHbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setVbarPolicy(ScrollPane.ScrollBarPolicy.AS_NEEDED);
-        imgAtual.sp.setHmax(800);
-        imgAtual.sp.setVmax(780);
+        imgAtual.defineImagem(imgNova);
     }
 }

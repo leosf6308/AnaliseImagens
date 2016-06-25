@@ -25,14 +25,14 @@ public class Salvar {
     public static void salva(Image img, String path){
         try {
             System.out.println("Saving "+path);
-            ImageIO.write(SwingFXUtils.fromFXImage(TCC.obtemClassImagemAtual().imagem, null), path.substring(path.length()) , new File(path));
+            ImageIO.write(SwingFXUtils.fromFXImage(TCC.obtemClassImagemAtual().getImagem(), null), path.substring(path.length()) , new File(path));
         } catch (IOException ex) {
             System.out.println("IOException (Salvar.java@salva(img,path): "+ex.getMessage());
         }
     }
     public static void salvarComo(){
         try {
-            Imagens imgAtual = TCC.obtemClassImagemAtual();
+            Visualizacao imgAtual = TCC.obtemClassImagemAtual();
             if(imgAtual == null)
                 return;
             
@@ -63,9 +63,9 @@ public class Salvar {
                 System.out.print(writerNames[i]+",");
             
             if(extensao.equals("PNG"))
-                ImageIO.write(SwingFXUtils.fromFXImage(TCC.obtemClassImagemAtual().imagem,null), "png" , outFile);
+                ImageIO.write(SwingFXUtils.fromFXImage(imgAtual.getImagem(),null), "png" , outFile);
             else if(extensao.equals("BMP")){
-                BufferedImage bImage = SwingFXUtils.fromFXImage(TCC.obtemClassImagemAtual().imagem,null);
+                BufferedImage bImage = SwingFXUtils.fromFXImage(imgAtual.getImagem(),null);
                 BufferedImage outImg = new BufferedImage(bImage.getWidth(),bImage.getHeight(),BufferedImage.TYPE_INT_BGR);
                 Graphics2D graph = outImg.createGraphics();
                 graph.setColor(Color.WHITE);
@@ -78,7 +78,7 @@ public class Salvar {
                 RenderedImage im = (RenderedImage)outImg;
                 ImageIO.write(im, "bmp" , outFile);
             }else if(extensao.equals("JPG")){
-                BufferedImage bImage = SwingFXUtils.fromFXImage(TCC.obtemClassImagemAtual().imagem,null);
+                BufferedImage bImage = SwingFXUtils.fromFXImage(imgAtual.getImagem(),null);
                 BufferedImage outImg = new BufferedImage(bImage.getWidth(),bImage.getHeight(),BufferedImage.TYPE_INT_BGR);
                 Graphics2D graph = outImg.createGraphics();
                 graph.setColor(Color.WHITE);
