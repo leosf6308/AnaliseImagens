@@ -1,7 +1,5 @@
 package Tcc;
 
-import java.awt.Dimension;
-import java.awt.Toolkit;
 import java.io.File;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -27,9 +25,8 @@ import javafx.stage.StageStyle;
 import javafx.stage.WindowEvent;
 import javax.swing.JOptionPane;
 import javafx.scene.layout.StackPane;
-import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
-import javafx.scene.layout.AnchorPane;
+import javafx.scene.layout.Pane;
 
 /*@author Henrique, Leonardo and Joseph*/
 public class TCC extends Application {
@@ -141,7 +138,7 @@ public class TCC extends Application {
         //salvar
         MenuItem salvar = new MenuItem("_Salvar");
         salvar.setAccelerator(
-                KeyCombination.keyCombination("SHORTCUT+S")
+            KeyCombination.keyCombination("SHORTCUT+S")
         );
         salvar.setOnAction((ActionEvent event) -> {
             try {
@@ -161,7 +158,7 @@ public class TCC extends Application {
                 if (extensao.equals(".FLV") || extensao.equals(".AVI") || extensao.equals(".MP4")) {
                     Salvar.salvarComo();
                 } else {
-                    Visualizacao imgAtual = TCC.obtemClassImagemAtual();
+                    Visualizacao imgAtual = TCC.visuAtual();
                     if (imgAtual == null) {
                         return;
                     }
@@ -206,8 +203,7 @@ public class TCC extends Application {
         );
         preto.setOnAction((ActionEvent event) -> {
             Visualizacao viewAtual = TCC.visuAtual();
-            ImageView img = new ImageView();
-            img.setImage(tratamentoImagens.tonsdeCinza(viewAtual.getImagem()));
+            viewAtual.defineImagem(tratamentoImagens.tonsdeCinza(viewAtual.getImagem()));
         });
         //brighter
         MenuItem brighter = new MenuItem("_Brighter");
@@ -216,8 +212,7 @@ public class TCC extends Application {
         );
         brighter.setOnAction((ActionEvent event) -> {
             Visualizacao viewAtual = TCC.visuAtual();
-            ImageView img = new ImageView();
-            img.setImage(tratamentoImagens.brighter(viewAtual.getImagem()));
+            viewAtual.defineImagem(tratamentoImagens.brighter(viewAtual.getImagem()));
         });
         //darker
         MenuItem darker = new MenuItem("_Escuro");
@@ -226,8 +221,7 @@ public class TCC extends Application {
         );
         darker.setOnAction((ActionEvent event) -> {
             Visualizacao viewAtual = TCC.visuAtual();
-            ImageView img = new ImageView();
-            img.setImage(tratamentoImagens.darker(viewAtual.getImagem()));
+            viewAtual.defineImagem(tratamentoImagens.darker(viewAtual.getImagem()));
         });
         //negativo
         MenuItem negativo = new MenuItem("_Negativo");
@@ -236,8 +230,7 @@ public class TCC extends Application {
         );
         negativo.setOnAction((ActionEvent event) -> {
             Visualizacao viewAtual = TCC.visuAtual();
-            ImageView img = new ImageView();
-            img.setImage(tratamentoImagens.negativo(viewAtual.getImagem()));
+            viewAtual.defineImagem(tratamentoImagens.negativo(viewAtual.getImagem()));
         });
         //deteccao de borda
         MenuItem detecBorda = new MenuItem("_Deteccão de borda");
@@ -246,8 +239,7 @@ public class TCC extends Application {
         );
         detecBorda.setOnAction((ActionEvent event) -> {
             Visualizacao viewAtual = TCC.visuAtual();
-            ImageView img = new ImageView();
-            img.setImage(tratamentoImagens.detecaoBorda(viewAtual.getImagem()));
+            viewAtual.defineImagem(tratamentoImagens.detecaoBorda(viewAtual.getImagem()));
         });
         //equalizacao de histograma
         MenuItem eqHistograma = new MenuItem("_Equalização de Histograma");
@@ -256,8 +248,7 @@ public class TCC extends Application {
         );
         eqHistograma.setOnAction((ActionEvent event) -> {
             Visualizacao viewAtual = TCC.visuAtual();
-            ImageView img = new ImageView();
-            img.setImage(tratamentoImagens.eqHistograma(viewAtual.getImagem()));
+            viewAtual.defineImagem(tratamentoImagens.eqHistograma(viewAtual.getImagem()));
         });
         //Gradiente
         MenuItem gradiente = new MenuItem("_Gradiente");
@@ -266,20 +257,43 @@ public class TCC extends Application {
         );
         gradiente.setOnAction((ActionEvent event) -> {
             Visualizacao viewAtual = TCC.visuAtual();
-            ImageView img = new ImageView();
-            img.setImage(tratamentoImagens.gradiente(viewAtual.getImagem()));
+            viewAtual.defineImagem(tratamentoImagens.gradiente(viewAtual.getImagem()));
+        });
+        //Filtro Otsu
+        MenuItem segmentacaoOtsu = new MenuItem("Segmentacao _Otsu");
+        segmentacaoOtsu.setAccelerator(
+                KeyCombination.keyCombination("SHORTCUT+O")
+        );
+        segmentacaoOtsu.setOnAction((ActionEvent event) -> {
+            Visualizacao viewAtual = TCC.visuAtual();
+            viewAtual.defineImagem(tratamentoImagens.segmentacaoOtsu(viewAtual.getImagem()));
         });
         //segmentacao
-        MenuItem segmentacao = new MenuItem("_Segmentacao");
+        MenuItem segmentacao = new MenuItem("_Segmentação");
+        segmentacao.setAccelerator(
+                KeyCombination.keyCombination("SHORTCUT+S")
+        );
         segmentacao.setOnAction((ActionEvent event) -> {
-            tratamentoImagens.segmentacao();
+            Visualizacao viewAtual = TCC.visuAtual();
+            if(viewAtual == null){
+                JOptionPane.showMessageDialog(null, "Favor abrir uma imagem para segmentar.", "Aviso!", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            Visualizacao viewSegm  = novoVisualizacao(null,false);
+            if(viewSegm == null){
+                JOptionPane.showMessageDialog(null, "Não há mais espaço para imagens.", "Aviso!", JOptionPane.INFORMATION_MESSAGE);
+                return;
+            }
+            //pilhaVisualizacao.getChildren().add(viewSegm.getPane());
+            Segmentacao.main(viewAtual.getImagem(),viewSegm);
         });
         //segmentacao
-        MenuItem detectItems = new MenuItem("_Detectar obetos");
+        MenuItem detectItems = new MenuItem("_Detectar objetos");
         detectItems.setOnAction((ActionEvent event) -> {
-            tratamentoImagens.shapeDetector();
+            Visualizacao viewAtual = TCC.visuAtual();
+            viewAtual.defineImagem(tratamentoImagens.shapeDetector(viewAtual.getImagem()));
         });
-        filtros.getItems().addAll(preto, brighter, darker, negativo, detecBorda, eqHistograma, gradiente, segmentacao, detectItems);
+        filtros.getItems().addAll(preto, brighter, darker, negativo, detecBorda, eqHistograma, gradiente, segmentacaoOtsu, segmentacao, detectItems);
 
         //shapeDetector()
         //Ajuda
@@ -388,38 +402,54 @@ public class TCC extends Application {
         botoesVisu.getChildren().remove(btnTroca);
         cont--;
     }
-
-    public static void novoVisualizacao(Image imagem, Boolean eVideo) {
+    
+    public static int getIndiceLivre(){
         int i;
         Button st;
         Image icone;
         for (i = 0; i < usuarioVisu.length; i++) {
             if (usuarioVisu[i] == null) {
-                if (eVideo) {
-                    icone = new Image(TCC.class.getResourceAsStream("Video.png"));
-                } else {
-                    icone = new Image(TCC.class.getResourceAsStream("Imagem.png"));
-                }
-
-                //Cria botão de troca
-                st = new Button();
-                st.setGraphic(new ImageView(icone));
-                st.setMaxSize(64, 64);
-                final int id = i;
-                st.setOnAction(event1 -> mostraVisualizacao(id));
-                botoesVisu.getChildren().add(st);
-
-                //Cria a nova Visualizaçao
-                usuarioVisu[i] = new Visualizacao(imagem, (int) (Conteudo.getWidth() - botoesVisu.getWidth()), (int) Conteudo.getHeight());
-                pilhaVisualizacao.getChildren().add(usuarioVisu[i].getPane());
-
-                final Button btnTroca = st;
-                usuarioVisu[i].defineFechar(event2 -> fechaVisualizacao(id, btnTroca));
-                mostraVisualizacao(i);
-                break;
+                return i;
             }
         }
+        return -1;
+    }
+    
+    public static Visualizacao novoVisualizacao(Image imagem, Boolean eVideo) {
+        int i;
+        Button st;
+        Image icone;
+        
+        if (eVideo) {
+            icone = new Image(TCC.class.getResourceAsStream("Video.png"));
+        } else {
+            icone = new Image(TCC.class.getResourceAsStream("Imagem.png"));
+        }
+        i = getIndiceLivre();
+        if(i == -1){
+            JOptionPane.showMessageDialog(null, "Não há mais espaço para visualizações!", "Aviso!", JOptionPane.INFORMATION_MESSAGE);
+            return null;
+        }
+            
+        //Cria botão de troca
+        st = new Button();
+        st.setGraphic(new ImageView(icone));
+        st.setMaxSize(64, 64);
+        final int id = i;
+        st.setOnAction(event1 -> mostraVisualizacao(id));
+        botoesVisu.getChildren().add(st);
 
+        //Cria a nova Visualizaçao
+        if(imagem == null)
+            usuarioVisu[i] = new Visualizacao((int) (Conteudo.getWidth() - botoesVisu.getWidth()), (int) Conteudo.getHeight());
+        else
+            usuarioVisu[i] = new Visualizacao(imagem, (int) (Conteudo.getWidth() - botoesVisu.getWidth()), (int) Conteudo.getHeight());
+        pilhaVisualizacao.getChildren().add(usuarioVisu[i].getPane());
+
+        final Button btnTroca = st;
+        usuarioVisu[i].defineFechar(event2 -> fechaVisualizacao(id, btnTroca));
+        mostraVisualizacao(i);
+        return usuarioVisu[i];
     }
 
     /*
@@ -515,21 +545,5 @@ public class TCC extends Application {
             }
         }
         return null;
-    }
-
-    public static Visualizacao obtemClassImagemAtual() {
-        Visualizacao retorno = null;
-        int i;
-        for (i = 0; i < 6; i++) {
-            if (TCC.usuarioVisu[i] != null) {
-                if (TCC.usuarioVisu[i].estaSelecionado()) {
-                    System.out.println("Classe visivel: " + i + "; " + TCC.usuarioVisu[i].toString() + ";");
-                    retorno = TCC.usuarioVisu[i];
-                    break;
-                }
-            }
-        }
-        System.out.println("Devolvendo valor.");
-        return retorno;
     }
 }

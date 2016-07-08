@@ -44,7 +44,7 @@ public class framesVideos {
             vidPlayer.cas = new Duration(i);
             //player.seek(cas);
 
-            TCC.obtemClassImagemAtual().defineImagem(vidPlayer.view.snapshot(new SnapshotParameters(), new WritableImage(vidPlayer.w,vidPlayer.h)));
+            TCC.visuAtual().defineImagem(vidPlayer.view.snapshot(new SnapshotParameters(), new WritableImage(vidPlayer.w,vidPlayer.h)));
             //WritableImage wi = new WritableImage(1000, 1000);
             //Player.view.snapshot(new SnapshotParameters(), wi);
 
@@ -52,7 +52,7 @@ public class framesVideos {
             //System.out.println(c);
             // video.snapshot(params, image);
 
-            vidPlayer.im = new ImageView(TCC.obtemClassImagemAtual().getImagem());
+            vidPlayer.im = new ImageView(TCC.visuAtual().getImagem());
             vidPlayer.im.setFitHeight(290);
             vidPlayer.im.setFitWidth(480);
             mini.getChildren().add(vidPlayer.im);

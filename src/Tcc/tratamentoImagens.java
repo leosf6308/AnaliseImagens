@@ -221,7 +221,7 @@ public class tratamentoImagens {
     }
         
     public static void exibeHistograma(){
-        Visualizacao imgAtual = TCC.obtemClassImagemAtual();
+        Visualizacao imgAtual = TCC.visuAtual();
         if(imgAtual == null)
             return;
         
@@ -238,13 +238,13 @@ public class tratamentoImagens {
         new Graficos(xAxis,yAxis);
     }
     
-    public static void segmentacaoLimiar(Visualizacao imgAtual, PixelReader pr, int limiar){
-        WritableImage newImage = new WritableImage((int)imgAtual.getImagem().getWidth(),(int)imgAtual.getImagem().getHeight());
+    public static Image segmentacaoLimiar(Image imgAtual, PixelReader pr, int limiar){
+        WritableImage newImage = new WritableImage((int)imgAtual.getWidth(),(int)imgAtual.getHeight());
         PixelWriter pw = newImage.getPixelWriter();
         
         int i, x, y, width, height, r, g, b, m;
-        width = (int)imgAtual.getImagem().getWidth();
-        height = (int)imgAtual.getImagem().getHeight();
+        width = (int)imgAtual.getWidth();
+        height = (int)imgAtual.getHeight();
         System.out.println("Segmenting current image by threshold "+limiar);
         for(y = 0; y < height; y++){
             for(x = 0; x < width; x++){
@@ -259,114 +259,19 @@ public class tratamentoImagens {
                     pw.setColor(x, y, Color.BLACK);
             }
         }
-        
-        ImageView img = new ImageView();
-        img.setImage(newImage);
-        imgAtual.defineImagem(newImage);
-        /*
-        int[] peaks = new int[10];
-        int[] peakValues = new int[10];
-        for(i = 0; i < 10; i++){
-            peaks[i] = 0;
-            peakValues[i] = 0;
-        }
-        
-        int thisRngHigh = 25, thisRng = 0;
-        for(i = 0; i < 256; i++){
-            if(i > thisRngHigh){
-                thisRngHigh += 26;
-                thisRng++;
-            }
-            if(peakValues[thisRng] < histograma[i]){
-                peakValues[thisRng] = histograma[i];
-                peaks[thisRng] = i;
-            }
-        }
-        
-        float[] xAxis = new float[10];
-        float[] yAxis = new float[10];
-        for(i = 0; i < 10; i++){
-            xAxis[i] = (float)peaks[i];
-            yAxis[i] = (float)peakValues[i];
-        }
-        
-        new Graficos(xAxis,yAxis);
-        */
+        return newImage;
     }
     
-    public static void segmentacao2(){
-        Visualizacao imgAtual = TCC.obtemClassImagemAtual();
-        if(imgAtual == null)
-            return;
-        
-        PixelReader pr = imgAtual.getImagem().getPixelReader();
-        
-        int[] histograma = geraHistograma(pr,(int)imgAtual.getImagem().getWidth(),(int)imgAtual.getImagem().getHeight());
-        int i, k, threshold, width, height, size;
-        
-        float w = 0.0f;
-        float u = 0.0f;
-        float uT = 0.0f;
-        float work1, work2;
-        double work3 = 0.0f;
-        k = 255;
-        threshold = 0;
-        float[] histNormalized = new float[256];
-        
-        width = (int)imgAtual.getImagem().getWidth();
-        height = (int)imgAtual.getImagem().getHeight();
-        size = width*height;
-        
-        for (i=1; i<=k; i++) 
-            histNormalized[i-1] = histograma[i-1]/(float)size;
-        
-        for (i=1; i<=k; i++) 
-            uT+=(i*histNormalized[i-1]);
-        
-        for (i=1; i<k; i++) {
-            w+=histNormalized[i-1];
-            u+=(i*histNormalized[i-1]);
-            work1 = (uT * w - u);
-            work2 = (work1 * work1) / ( w * (1.0f-w) );
-            if (work2>work3) work3=work2;
-        }
-        threshold = (int)Math.sqrt(work3);
-        segmentacaoLimiar(imgAtual,pr,threshold);
-    }
-    
-    public static void segmentacao3(){
-        Visualizacao imgAtual = TCC.obtemClassImagemAtual();
-        if(imgAtual == null)
-            return;
-        
-        PixelReader pr = imgAtual.getImagem().getPixelReader();
-        int i, x, y, width, height, size;
-        width = (int)imgAtual.getImagem().getWidth();
-        height = (int)imgAtual.getImagem().getHeight();
-        int[] histograma = geraHistograma(pr,width,height);
-        int maxFnd = 0, maxFnt = 0;
-        for(i = 0; i < histograma.length; i++){
-            if(histograma[i] > maxFnt)
-                maxFnt = i;
-            else if(histograma[i] > maxFnd)
-                maxFnd = i;
-        }
-        segmentacaoLimiar(imgAtual,pr,(int)((maxFnt+maxFnd)/2));
-    }
-    
-    public static void segmentacaoOtsu(){
+    public static Image segmentacaoOtsu(Image imgAtual){
         //http://www.labbookpages.co.uk/software/imgProc/otsuThreshold.html
-        Visualizacao imgAtual = TCC.obtemClassImagemAtual();
-        if(imgAtual == null)
-            return;
         
-        PixelReader pr = imgAtual.getImagem().getPixelReader();
+        PixelReader pr = imgAtual.getPixelReader();
         
-        int[] histograma = geraHistograma(pr,(int)imgAtual.getImagem().getWidth(),(int)imgAtual.getImagem().getHeight());
+        int[] histograma = geraHistograma(pr,(int)imgAtual.getWidth(),(int)imgAtual.getHeight());
         int i, x, y, width, height, size;
         
-        width = (int)imgAtual.getImagem().getWidth();
-        height = (int)imgAtual.getImagem().getHeight();
+        width = (int)imgAtual.getWidth();
+        height = (int)imgAtual.getHeight();
         size = width*height;
         
         //Utilizando o método de Otsu.
@@ -395,45 +300,10 @@ public class tratamentoImagens {
                 limiar = i;
             }
         }
-        segmentacaoLimiar(imgAtual,pr,(int)limiar);
+        return segmentacaoLimiar(imgAtual,pr,(int)limiar);
     }
     
-    public static void segmentacao(){
-        Object[] possibilities = {"Otsu", "Segmentação (2)", "Fast Scanning", "Watershed", "K Means Clustering"};
-        String s = (String)JOptionPane.showInputDialog(null,"Selecione um algoritmo de segmentação:","Customized Dialog",
-                JOptionPane.PLAIN_MESSAGE,null,possibilities,"Otsu");
-        if(s == null || s.equals(""))
-            JOptionPane.showMessageDialog(null,"Eggs are not supposed to be green.","Insane Warning!",JOptionPane.WARNING_MESSAGE);
-        else if(s.equals("Otsu"))
-            segmentacaoOtsu();
-        else if(s.equals("Segmentação (2)"))
-            segmentacao2();
-        else{
-            Visualizacao imgAtual = TCC.obtemClassImagemAtual();
-            if(imgAtual == null)
-                return;
-            if(s.equals("Fast Scanning"))
-                Segmentacao.iniciaSegmentacao(Segmentacao.SEGM_DKH_FAST_SCANNING,imgAtual.getImagem());
-            else if(s.equals("Watershed"))
-                Segmentacao.iniciaSegmentacao(Segmentacao.SEGM_WATERSHED,imgAtual.getImagem());
-            else if(s.equals("K Means Clustering"))
-                Segmentacao.iniciaSegmentacao(Segmentacao.SEGM_KMEANS,imgAtual.getImagem());
-            /*
-            Visualizacao imgAtual = TCC.obtemClassImagemAtual();
-            if(imgAtual == null)
-                return;
-            SegmentacaoBak segmDados = new SegmentacaoBak(imgAtual.imagem);   
-            if(s.equals("Fast Scanning"))
-                segmDados.DKHFastScanning();
-            else if(s.equals("Watershed"))
-                segmDados.watershed();
-            else if(s.equals("K Means Clustering"))
-                segmDados.kMeans();
-            else
-                JOptionPane.showMessageDialog(null,"Selecione uma opção válida!","Idiota!",JOptionPane.WARNING_MESSAGE);*/
-        }
-    }
-    public static void shapeDetector(){
+    public static Image shapeDetector(Image imgAtual){
         //http://www.propulsion-analysis.com/screenshots.htm
         //http://www.edgeofspace.org/intro.htm
         //http://www.ufabc.edu.br/
@@ -447,17 +317,14 @@ public class tratamentoImagens {
 	if less than 2 zeros, inside point (no connection)
         else able to connect
         */
-        Visualizacao imgAtual = TCC.obtemClassImagemAtual();
-        if(imgAtual == null)
-            return;
         
-        PixelReader pr = imgAtual.getImagem().getPixelReader();
-        WritableImage imgNova = new WritableImage((int)imgAtual.getImagem().getWidth(),(int)imgAtual.getImagem().getHeight());
+        PixelReader pr = imgAtual.getPixelReader();
+        WritableImage imgNova = new WritableImage((int)imgAtual.getWidth(),(int)imgAtual.getHeight());
         PixelWriter pw = imgNova.getPixelWriter();
         
         int i, j, x, y, width, height, r, g, b, m, size;
-        width = (int)imgAtual.getImagem().getWidth();
-        height = (int)imgAtual.getImagem().getHeight();
+        width = (int)imgAtual.getWidth();
+        height = (int)imgAtual.getHeight();
         size = width*height;
      
         for(y = 0; y < height; y++){
@@ -488,8 +355,6 @@ public class tratamentoImagens {
             }
         }
         
-        ImageView img = new ImageView();
-        img.setImage(imgNova);
-        imgAtual.defineImagem(imgNova);
+        return imgNova;
     }
 }

@@ -25,14 +25,14 @@ public class Salvar {
     public static void salva(Image img, String path){
         try {
             System.out.println("Saving "+path);
-            ImageIO.write(SwingFXUtils.fromFXImage(TCC.obtemClassImagemAtual().getImagem(), null), path.substring(path.length()) , new File(path));
+            ImageIO.write(SwingFXUtils.fromFXImage(TCC.visuAtual().getImagem(), null), path.substring(path.length()) , new File(path));
         } catch (IOException ex) {
             System.out.println("IOException (Salvar.java@salva(img,path): "+ex.getMessage());
         }
     }
     public static void salvarComo(){
         try {
-            Visualizacao imgAtual = TCC.obtemClassImagemAtual();
+            Visualizacao imgAtual = TCC.visuAtual();
             if(imgAtual == null)
                 return;
             

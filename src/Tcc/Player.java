@@ -78,6 +78,11 @@ public class Player extends Application {
     private Slider slider;
     public videoFrame[] vidFrames;
     
+    public Player(String strCaminho){
+        
+        
+    }
+    
     public Player() {
 
         w = 900;
